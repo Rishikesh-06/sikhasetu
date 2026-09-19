@@ -1,0 +1,3 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { Landing } from "@/components/siksha/landing";
+export const Route = createFileRoute("/")({head:()=>({meta:[{title:"SIKHASETU — Adaptive Learning Intelligence"},{name:"description",content:"Adaptive diagnostics that reveal learning gaps, personalize practice, and turn classroom data into action."},{property:"og:title",content:"SIKHASETU — Adaptive Learning Intelligence"},{property:"og:description",content:"Bridging the gap between grade and actual learning."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:Landing});

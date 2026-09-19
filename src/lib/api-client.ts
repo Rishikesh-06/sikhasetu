@@ -1,0 +1,44 @@
+const API_BASE = (import.meta as any).env?.["VITE_API_URL"] || "http://localhost:3001/api";
+
+export class ApiError extends Error {
+  constructor(public status: number, message: string, public data?: any) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const token = localStorage.getItem("sikhsetu_auth_token");
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string> || {})
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const url = `${API_BASE}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers
+    });
+
+    if (!response.ok) {
+      let errorData: any = {};
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { error: response.statusText };
+      }
+      throw new ApiError(response.status, errorData.error || `HTTP ${response.status} error`, errorData);
+    }
+
+    return await response.json() as T;
+  } catch (err: any) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError(500, `Network or Server Error: ${err.message}`);
+  }
+}
