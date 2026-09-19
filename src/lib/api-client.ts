@@ -1,4 +1,13 @@
-const API_BASE = (import.meta as any).env?.["VITE_API_URL"] || "http://localhost:3001/api";
+const getApiBase = (): string => {
+  const envUrl = (import.meta as any).env?.["VITE_API_URL"];
+  if (envUrl) return envUrl.replace(/\/+$/, "");
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return "/api";
+  }
+  return "http://localhost:3001/api";
+};
+
+const API_BASE = getApiBase();
 
 export class ApiError extends Error {
   constructor(public status: number, message: string, public data?: any) {

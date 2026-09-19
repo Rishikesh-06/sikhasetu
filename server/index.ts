@@ -125,21 +125,26 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // Startup Routine
-async function startServer() {
+export async function ensureInitialized() {
   try {
-    console.log("[SIKHASETU] Bootstrapping backend server...");
-    await initDatabase();
-
-    // Check if database needs initial catalog seeding
     const qCountRes = await query(`SELECT COUNT(*) as cnt FROM questions`);
     const count = Number(qCountRes.rows[0]?.cnt || 0);
 
     if (count === 0) {
       console.log("[SIKHASETU] Database is empty. Seeding standard curriculum questions and schools...");
+      await initDatabase();
       await seedCurriculumCatalog();
-    } else {
-      console.log(`[SIKHASETU] Database ready with ${count} questions.`);
     }
+  } catch (err: any) {
+    console.error("[SIKHASETU] Non-fatal init check error:", err.message);
+  }
+}
+
+async function startServer() {
+  try {
+    console.log("[SIKHASETU] Bootstrapping backend server...");
+    await initDatabase();
+    await ensureInitialized();
 
     app.listen(PORT, () => {
       console.log(`====================================================`);
@@ -153,7 +158,12 @@ async function startServer() {
   }
 }
 
-if (process.env.NODE_ENV !== "test") {
+// Only listen if executed directly and not in serverless runtime
+if (
+  process.env.NODE_ENV !== "test" &&
+  !process.env.VERCEL &&
+  !process.env.AWS_LAMBDA_FUNCTION_NAME
+) {
   startServer();
 }
 
