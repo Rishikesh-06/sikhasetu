@@ -17,7 +17,7 @@ export class ApiError extends Error {
 }
 
 export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem("sikhsetu_auth_token");
+  const token = typeof window !== "undefined" ? localStorage.getItem("sikhsetu_auth_token") : null;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string> || {})

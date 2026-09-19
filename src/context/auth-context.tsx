@@ -23,16 +23,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setAuthSession = (newUser: User, newToken: string) => {
     setUser(newUser);
     setToken(newToken);
-    localStorage.setItem("sikhsetu_auth_token", newToken);
-    localStorage.setItem("sikhsetu_user", JSON.stringify(newUser));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("sikhsetu_auth_token", newToken);
+      localStorage.setItem("sikhsetu_user", JSON.stringify(newUser));
+    }
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("sikhsetu_auth_token");
-    localStorage.removeItem("sikhsetu_user");
-    sessionStorage.clear();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("sikhsetu_auth_token");
+      localStorage.removeItem("sikhsetu_user");
+      sessionStorage.clear();
+    }
   };
 
   const refreshUser = async (): Promise<User | null> => {
@@ -40,7 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await authApi.getMe();
       if (res.user) {
         setUser(res.user);
-        localStorage.setItem("sikhsetu_user", JSON.stringify(res.user));
+        if (typeof window !== "undefined") {
+          localStorage.setItem("sikhsetu_user", JSON.stringify(res.user));
+        }
         return res.user;
       }
       return null;
@@ -75,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initAuth = async () => {
+      if (typeof window === "undefined") return;
       const savedToken = localStorage.getItem("sikhsetu_auth_token");
 
       if (savedToken) {
