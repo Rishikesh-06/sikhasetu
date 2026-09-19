@@ -35,7 +35,7 @@ app.use((req, res, next) => {
 });
 
 // General Health check
-app.get("/api/health", (req, res) => {
+app.get(["/api/health", "/health"], (req, res) => {
   res.json({
     status: "healthy",
     platform: "SIKHASETU Adaptive Learning Intelligence",
@@ -45,7 +45,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Real Database Health check
-app.get("/api/health/db", async (req, res) => {
+app.get(["/api/health/db", "/health/db"], async (req, res) => {
   try {
     const health = await getDatabaseHealth();
     if (health.status === "healthy") {
@@ -64,7 +64,7 @@ app.get("/api/health/db", async (req, res) => {
 });
 
 // AI Engine Health check
-app.get("/api/health/ai", async (req, res) => {
+app.get(["/api/health/ai", "/health/ai"], async (req, res) => {
   const apiKey = process.env.GROQ_API_KEY || process.env.XAI_API_KEY;
   if (!apiKey) {
     return res.status(503).json({
@@ -107,14 +107,18 @@ app.get("/api/health/ai", async (req, res) => {
   }
 });
 
-// Mount Routes
-app.use("/api/auth", authRouter);
-app.use("/api/student/ai-tutor", aiTutorRouter);
-app.use("/api/student/disha", dishaRouter);
-app.use("/api/student", studentRouter);
-app.use("/api/teacher", teacherRouter);
-app.use("/api/parent", parentRouter);
-app.use("/api/seed", seedRouter);
+// Mount Routers (support both with and without /api prefix)
+const apiRouter = express.Router();
+apiRouter.use("/auth", authRouter);
+apiRouter.use("/student/ai-tutor", aiTutorRouter);
+apiRouter.use("/student/disha", dishaRouter);
+apiRouter.use("/student", studentRouter);
+apiRouter.use("/teacher", teacherRouter);
+apiRouter.use("/parent", parentRouter);
+apiRouter.use("/seed", seedRouter);
+
+app.use("/api", apiRouter);
+app.use("/", apiRouter);
 
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

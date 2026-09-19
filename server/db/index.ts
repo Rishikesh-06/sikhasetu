@@ -528,17 +528,15 @@ export async function getDatabaseHealth(): Promise<{
 }
 
 export async function initDatabase(): Promise<void> {
-  console.log("[Database] Initializing schema from schema.sql...");
-  const schemaPath = path.join(process.cwd(), "server", "db", "schema.sql");
-  if (fs.existsSync(schemaPath)) {
-    const schemaSql = fs.readFileSync(schemaPath, "utf-8");
-    try {
+  try {
+    const schemaPath = path.join(process.cwd(), "server", "db", "schema.sql");
+    if (fs.existsSync(schemaPath)) {
+      const schemaSql = fs.readFileSync(schemaPath, "utf-8");
       await query(schemaSql);
       console.log("[Database] Schema successfully initialized.");
-    } catch (err: any) {
-      console.error("[Database] Error running schema.sql:", err.message);
-      throw err;
     }
+  } catch (err: any) {
+    console.warn("[Database] Schema init warning (non-fatal):", err.message);
   }
 }
 
